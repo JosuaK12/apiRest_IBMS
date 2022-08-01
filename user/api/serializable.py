@@ -1,3 +1,4 @@
+from email.policy import default
 from rest_framework import serializers
 from drf_extra_fields.fields import Base64ImageField
 from user.models import extension,User
@@ -9,7 +10,7 @@ class usuarioSerializable(serializers.Serializer):
     username = serializers.CharField()
     email = serializers.EmailField()
     password = serializers.CharField()
-    images = Base64ImageField(required=True,use_url = True , max_length = None)
+    images = Base64ImageField(default ='/users/biblia.png',use_url = True , max_length = None)
     rol_id = serializers.IntegerField()
     rol=serializers.CharField(read_only=True)
     def create(self , validate_data):
@@ -38,3 +39,14 @@ class usuarioSerializable(serializers.Serializer):
             raise serializers.ValidationError({'Error email':'Este email ya esta en uso'})
         else:
             return data
+class listaUser(serializers.Serializer):
+    id = serializers.IntegerField()
+    user_id = serializers.IntegerField()
+    username = serializers.CharField()
+    first_name = serializers.CharField()
+    last_name = serializers.CharField()
+    email = serializers.CharField()
+    image = serializers.ImageField()
+    roles_id = serializers.IntegerField()
+    roles = serializers.CharField()
+

@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-b$a8wrwhlw#&x@snr9!ac2m!$%-qn9wh1oco7&8e$po4n@kyw#
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'categoria',
     'publicacion',
     'rest_framework_simplejwt',
+    'rest_framework.authtoken',
 ]
 
 MIDDLEWARE = [
@@ -125,7 +126,7 @@ TIME_ZONE = 'America/Guayaquil'
 
 USE_I18N = True
 
-USE_TZ = True
+USE_TZ = False
 
 
 # Static files (CSS, JavaScript, Images)
