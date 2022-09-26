@@ -5,7 +5,7 @@ from eventos.models import eventos
 
 class registro(models.Model):
     reg_fechaRegistro = models.DateField(auto_now_add = True)
-    reg_asistencia = models.BooleanField(default=False)
+    reg_asistencia = models.BooleanField()
     user = models.ForeignKey(User , on_delete = models.RESTRICT)
     eventos = models.ForeignKey(eventos , on_delete = models.RESTRICT)
     class Meta:

@@ -7,6 +7,9 @@ from user.models import extension
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework.authentication import TokenAuthentication
+from rest_framework_simplejwt.tokens import RefreshToken
+
+from django.contrib.auth.hashers import check_password
 class postUser(APIView):
     def post(self,request):
         try:
@@ -17,6 +20,21 @@ class postUser(APIView):
             return Response(serializer.errors, status = status.HTTP_400_BAD_REQUEST)        
         except Exception as e:   
             return Response(str(e), status = status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+class updateUser(APIView):
+    permission_classes=[IsAuthenticated]
+    authentication_classes=[JWTAuthentication,TokenAuthentication]
+    def put(self,request,id):
+        try:
+            user=serializable.User.objects.get(pk=id)
+            serializer=serializable.usuarioSerializableUpdate(instance=user,data=request.data)
+            if serializer.is_valid():
+                serializer.save()
+                return Response("Actualizado Correctamente",status=status.HTTP_200_OK)
+            return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:   
+            return Response(str(e), status = status.HTTP_500_INTERNAL_SERVER_ERROR)
+
 class getUser(APIView):
     def get(self, request):
         try:
@@ -46,21 +64,45 @@ class getProfile(APIView):
     def get(self, request):
         try:
             extension = serializable.extension.objects.filter(user = request.user.id )
-            data = []
+            row={}
             for ext in extension:
-                row = [{
+                row = {
                     "id":ext.id,
                     "user_id":ext.user.id,
                     "username":ext.user.username,
                     "first_name":ext.user.first_name,
                     "last_name":ext.user.last_name,
                     "email":ext.user.email,
-                    "images":ext.image.url,
+                    "image":ext.image,
                     "roles_id":ext.roles.id,
                     "roles":ext.roles.rol_nombre
-                }]
-                for a in row:
-                    data = data + [a]
-            return Response(data , status=status.HTTP_200_OK)
+                }
+            serializer=serializable.listaUser(row,context={"request":request})
+            return Response(serializer.data , status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response(str(e), status = status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+class WebLogin(APIView):
+    def post(self,request):
+        try:
+            serializer=serializable.webLogin(data=request.data)
+            if serializer.is_valid():
+                if serializable.User.objects.filter(username=serializer.data["username"]).exists():
+                    user=serializable.User.objects.get(username=serializer.data["username"])
+                    ext=serializable.extension.objects.get(user=user)
+                    if ext.roles_id==2:
+                        return Response({"non_field_errors":["No tienes los permisos para acceder"]},status= status.HTTP_401_UNAUTHORIZED)
+                    if check_password(serializer.data["password"],user.password):
+                        refresh = RefreshToken.for_user(user)
+                        tok={
+                        'refresh': str(refresh),
+                        'access': str(refresh.access_token),
+                        }
+                        tokserial=serializable.JWTToken(tok)
+                        return Response(tokserial.data,status=status.HTTP_200_OK)
+                    return Response({"non_field_errors":["No puede iniciar sesion con las credenciales proporcionadas"]},status= status.HTTP_401_UNAUTHORIZED)
+                else:
+                    return Response({"non_field_errors":["No puede iniciar sesion con las credenciales proporcionadas"]},status= status.HTTP_401_UNAUTHORIZED)
+            return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             return Response(str(e), status = status.HTTP_500_INTERNAL_SERVER_ERROR)

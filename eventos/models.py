@@ -9,7 +9,7 @@ class eventos(models.Model):
     eve_fecha = models.DateField()
     eve_horaInicio = models.TimeField()
     eve_horaFinal = models.TimeField()
-    
+    eve_estado = models.CharField(max_length=20,default="activo")
     class Meta:
         verbose_name = "evento"
         verbose_name_plural = "Eventos"

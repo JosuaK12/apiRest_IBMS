@@ -23,3 +23,15 @@ class postCategoria(APIView):
             return Response(serializer.errors, status = status.HTTP_400_BAD_REQUEST)        
         except Exception as e:   
             return Response(str(e), status = status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+class putCategoria(APIView):
+    def put(self,request, id):
+        try:
+            categoria = serializable.models.categoria.objects.get(pk=id)
+            serializer = serializable.categoriaSerializable(instance=categoria,data=request.data)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data, status = status.HTTP_200_OK)
+            return Response(serializer.errors, status = status.HTTP_400_BAD_REQUEST)        
+        except Exception as e:   
+            return Response(str(e), status = status.HTTP_500_INTERNAL_SERVER_ERROR)
